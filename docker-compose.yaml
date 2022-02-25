@@ -1,0 +1,64 @@
+version: "3.8"
+
+services:
+  microservice-consumer:
+    build:
+      dockerfile: ./backend-consumer/Dockerfile
+      context: .
+    container_name: microservice-consumer
+    networks:
+      - aplication-academy
+    ports:
+      - "5050:5050"
+    depends_on:
+      - postgres
+      - rabbitmq
+      - microservice-productor
+
+  microservice-productor:
+      build:
+        dockerfile: ./backend-productor/Dockerfile
+        context: .
+      container_name: microservice-productor
+      networks:
+        - aplication-academy
+      ports:
+        - "8080:8080"
+      depends_on:
+        - postgres
+        - rabbitmq
+
+  postgres:
+    image: postgres
+    container_name: postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=12345678
+      - POSTGRES_DB=postgres-db
+    ports:
+      - "5432:5432"
+    networks:
+      - aplication-academy
+    volumes:
+      - pgdata:/var/lib/postgres/data/
+
+  rabbitmq:
+    image: rabbitmq:management
+    ports:
+      - '5672:5672'
+      - '25672:25672'
+      - '15672:15672'
+    networks:
+      - aplication-academy
+    environment:
+      - RABBITMQ_USER=guest
+      - RABBITMQ_PASSWORD=guest
+    volumes:
+      - 'rabbitmq_data:/bitnami/rabbitmq/mnesia'
+networks:
+  aplication-academy:
+    driver: bridge
+
+volumes:
+  pgdata:
+  rabbitmq_data:
